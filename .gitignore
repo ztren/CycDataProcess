@@ -1,0 +1,8 @@
+__pycache__
+chart.png
+.DS_store
+*.txt
+*.ipynb
+*.py
+*.xlsx
+*.mplstyle
