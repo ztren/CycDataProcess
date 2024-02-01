@@ -1,6 +1,6 @@
 # Recycler Data Tracker and plotter for Griffith Lab
 ## Installing (macOS)
-Firstrun: Install MATLAB. execute the following line of code in bash
+Firstrun: Install MATLAB. Change Directory to the folder. Execute the following line of code in bash
 
 `chmod 755 run.sh`
 
