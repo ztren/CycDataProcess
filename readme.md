@@ -1,4 +1,4 @@
-# Recycler Data Tracker and plotter for Griffith Lab
+# Recycler Data Tracker and Plotter for Griffith Lab
 ## Installing (macOS)
 Firstrun: Install MATLAB. Change Directory to the folder. Execute the following line of code in bash
 
@@ -15,5 +15,12 @@ File name can be with or without `.txt` (but the actual file should be a txt fil
 ### Peak Voltage
 This is the fully charged voltage, used for trimming when the voltage doesn't actually change at the charged state. (You can enter an arbitrarily chosen large number like `10000` to disable charging trimming)
 
+## Note
+if one want to do research on the figure rather than get an impression of everything it might be better to use the actual MATLAB app where one can scale in and drag the plots. To do this simply open the `dataproc.m` on MATLAB, and comment out the last line, i.e. making it
+
+`% close all`
+
 ## Future plans
 add limitations (like plotting for certain cycles)?
+
+Lithiation
