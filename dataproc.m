@@ -2,12 +2,13 @@ Filename = input('Please input the file name:',"s");
 if string(Filename(max(strlength(Filename)-3,1):strlength(Filename))) ~= ".txt"
     Filename = Filename + ".txt";
 end
-% Filename = 'RH001_Li4Ti5O12_initialtest_1C-2C-10C_2pt7V_CF7.txt' %Test File
-Rawdata = readtable(Filename);
-Rawdata.Properties.VariableNames = ["cycle number" , "ox/red" , "control changes" , "Ns changes" , "time/s" , "step time/s" , "Ecell/V" , "<I>/mA" , "Capacity/mA.h" , "Q discharge/mA.h" , "Q charge/mA.h" , "dq/mA.h"];
 
 % PeakVoltage = 2.7 %Test voltage
 PeakVoltage = input('Please input the peak (charged) voltage (±0.005V):');
+
+% Filename = 'RH001_Li4Ti5O12_initialtest_1C-2C-10C_2pt7V_CF7.txt' %Test File
+Rawdata = readtable(Filename);
+Rawdata.Properties.VariableNames = ["cycle number" , "ox/red" , "control changes" , "Ns changes" , "time/s" , "step time/s" , "Ecell/V" , "<I>/mA" , "Capacity/mA.h" , "Q discharge/mA.h" , "Q charge/mA.h" , "dq/mA.h"];
 
 nCycle = max(Rawdata{:,'cycle number'});
 lightBLUE = [0.356862745098039,0.811764705882353,0.956862745098039];
