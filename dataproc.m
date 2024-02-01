@@ -65,4 +65,4 @@ hold off
 exportgraphics(vt,'TimeVoltage.png','Resolution',300)
 exportgraphics(vi,'VoltageCurrent.png','Resolution',300)
 exportgraphics(qt,'TimeCapacity.png','Resolution',300)
-close
+close all
