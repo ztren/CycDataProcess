@@ -17,7 +17,7 @@ blueGRADIENTflexible = @(i,N) lightBLUE + (darkBLUE-lightBLUE)*((i)/(N));
 
 vt = figure;
 vi = figure;
-qt = figure;
+qv = figure;
 Index = 1;
 LastState = -1; % 1 for charge, 0 for discharge
 for Cyclenum = (0: nCycle)
@@ -36,11 +36,11 @@ for Cyclenum = (0: nCycle)
                 subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
                 plot(Dataarray(:,2),Dataarray(:,3),'color',blueGRADIENTflexible(Cyclenum,nCycle));
                 xlabel("Voltage (V)");ylabel("Current (mA)");
-                figure(qt);
+                figure(qv);
                 hold on
                 subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
-                plot(Dataarray(:,1),Dataarray(:,4),'color',blueGRADIENTflexible(Cyclenum,nCycle));
-                xlabel("time (s)");ylabel("Capacity (mAh)");
+                plot(Dataarray(:,4),Dataarray(:,2),'color',blueGRADIENTflexible(Cyclenum,nCycle));
+                xlabel("Capacity (mAh)");ylabel("Voltage (V)");
             end
             if (Index == height(Rawdata))
                 break
@@ -65,5 +65,5 @@ hold off
 
 exportgraphics(vt,'TimeVoltage.png','Resolution',300)
 exportgraphics(vi,'VoltageCurrent.png','Resolution',300)
-exportgraphics(qt,'TimeCapacity.png','Resolution',300)
+exportgraphics(qv,'VoltageCapacity.png','Resolution',300)
 close all
