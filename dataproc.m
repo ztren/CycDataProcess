@@ -4,7 +4,7 @@ if string(Filename(max(strlength(Filename)-3,1):strlength(Filename))) ~= ".txt"
 end
 
 % PeakVoltage = 2.7 %Test voltage
-PeakVoltage = input('Please input the peak (charged) voltage (±0.005V):');
+PeakVoltage = input('Please input the peak (charged) voltage (±0.005V):'); % Input a huge number to disable clipping
 TheOneCycle = input('Please input the index of cycle for analysis (0 for disabling):');
 
 % Filename = 'RH001_Li4Ti5O12_initialtest_1C-2C-10C_2pt7V_CF7.txt' %Test File

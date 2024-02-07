@@ -23,7 +23,11 @@ if one want to do research on the figure rather than get an impression of everyt
 
 `% close all`
 
-<!-- ## Future plans
+## Future plans
 add limitations (like plotting for certain cycles)?
-
-Lithiation -->
+Test Test
+user enter AM mass in mg
+change CE to scatter plot
+fixed scale for single cycle graphs
+dQ/dV
+<!-- Lithiation -->
