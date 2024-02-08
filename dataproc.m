@@ -4,11 +4,16 @@ if string(Filename(max(strlength(Filename)-3,1):strlength(Filename))) ~= ".txt"
 end
 
 % PeakVoltage = 2.7 %Test voltage
-PeakVoltage = input('Please input the peak (charged) voltage (±0.005V):'); % Trimming is now disabled. PeakVoltage is now used for setting the axis of single cycle diagram. If 
+PeakVoltage = input('Please input the peak (charged) voltage for graphing (0 for auto adjustment):'); % Trimming is now disabled. PeakVoltage is now used for setting the axis of single cycle diagram. If 
 TheOneCycle = input('Please input the first index (to the final) of cycle for analysis\n (0 for disabling, 1 for all cycles):');
+Mass = input('Please enter the specific mass (mg, <=0 for disabling):');
 
 % Filename = 'RH001_Li4Ti5O12_initialtest_1C-2C-10C_2pt7V_CF7.txt' %Test File
-Rawdata = readtable("Data/"+Filename);
+try
+    Rawdata = readtable("Data/"+Filename);
+catch
+    error("File not found. Did you put it in Data/Filename?")
+end
 Rawdata.Properties.VariableNames = ["cycle number" , "ox/red" , "control changes" , "Ns changes" , "time/s" , "step time/s" , "Ecell/V" , "<I>/mA" , "Capacity/mA.h" , "Q discharge/mA.h" , "Q charge/mA.h" , "dq/mA.h"];
 
 Path = "Figures/"+erase(Filename,".txt");
@@ -30,13 +35,16 @@ lightBLUE = [0.356862745098039,0.811764705882353,0.956862745098039];
 darkBLUE = [0.0196078431372549,0.0745098039215686,0.670588235294118];
 blueGRADIENTflexible = @(i,N) lightBLUE + (darkBLUE-lightBLUE)*((i)/(N));
 
-vt = figure;
-vi = figure;
-qv = figure;
+% vt = figure;
+% vi = figure;
+qv = figure; % Q/V
+if (Mass > 0)
+    qm = figure; % Qm^-1/V
+end
 qn = figure; % charge/ previous discharge
 if (TheOneCycle > 0)
     sc = figure; % Single Cycle
-    tc = figure; % Overlapped Cycles
+    tc = figure; % Conbined Cycles
     mkdir(Path+"/SingleCycleData");
 end
 QFinal = [];
@@ -64,6 +72,13 @@ for Cyclenum = (0: nCycle)
                 subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
                 plot(Dataarray(:,4),Dataarray(:,2),'color',blueGRADIENTflexible(Cyclenum,nCycle));
                 xlabel("Capacity (mAh)");ylabel("Voltage (V)");
+                if (Mass > 0)
+                    figure(qm);
+                    hold on
+                    subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
+                    plot(Dataarray(:,4) / Mass,Dataarray(:,2),'color',blueGRADIENTflexible(Cyclenum,nCycle));
+                    xlabel("mAh/mg");ylabel("Voltage (V)");
+                end
             end
             if (Cyclenum ~= 0) || (LastState == 0)
                 QFinal = [QFinal; Dataarray(height(Dataarray),4)];
@@ -125,6 +140,9 @@ xlabel("Number of Cycle");ylabel("QC/QDC");
 % exportgraphics(vi,Path+'/VoltageCurrent.png','Resolution',300)
 exportgraphics(qv,Path+'/VoltageCapacity.png','Resolution',300)
 exportgraphics(qn,Path+'/IterationCharge.png','Resolution',300)
+if (Mass > 0)
+    exportgraphics(qm,Path+'/VoltageCapacityMass.png','Resolution',300)
+end
 if (TheOneCycle > 0)
     exportgraphics(tc,Path+'/CombinedCycle.png','Resolution',300)
 end
