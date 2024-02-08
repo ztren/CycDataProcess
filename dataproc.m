@@ -5,12 +5,14 @@ end
 
 % PeakVoltage = 2.7 %Test voltage
 PeakVoltage = input('Please input the peak (charged) voltage (±0.005V):'); % Trimming is now disabled. PeakVoltage is now used for setting the axis of single cycle diagram. If 
-TheOneCycle = input('Please input the index of cycle for analysis (0 for disabling):');
+TheOneCycle = input('Please input the first index (to the final) of cycle for analysis\n (0 for disabling, 1 for all cycles):');
 
 % Filename = 'RH001_Li4Ti5O12_initialtest_1C-2C-10C_2pt7V_CF7.txt' %Test File
-Rawdata = readtable(Filename);
+Rawdata = readtable("Data/"+Filename);
 Rawdata.Properties.VariableNames = ["cycle number" , "ox/red" , "control changes" , "Ns changes" , "time/s" , "step time/s" , "Ecell/V" , "<I>/mA" , "Capacity/mA.h" , "Q discharge/mA.h" , "Q charge/mA.h" , "dq/mA.h"];
 
+Path = "Figures/"+erase(Filename,".txt");
+mkdir(Path);
 nCycle = max(Rawdata{:,'cycle number'});
 try
     if ((TheOneCycle > nCycle) || (TheOneCycle < 0) || (floor(TheOneCycle) ~= TheOneCycle))
@@ -34,6 +36,8 @@ qv = figure;
 qn = figure; % charge/ previous discharge
 if (TheOneCycle > 0)
     sc = figure; % Single Cycle
+    tc = figure; % Overlapped Cycles
+    mkdir(Path+"/SingleCycleData");
 end
 QFinal = [];
 
@@ -71,16 +75,22 @@ for Cyclenum = (0: nCycle)
                 ChargeHandler(:,1) = DischargeHandler(height(DischargeHandler),1) - ChargeHandler(:,1);
                 Handler = [DischargeHandler; ChargeHandler];
                 figure(sc);
-                hold on
                 % plot(DischargeHandler(:,1),DischargeHandler(:,2), 'color', 'blue');
                 % plot(ChargeHandler(:,1),ChargeHandler(:,2), 'color', 'red');
-                plot(Handler(:,1),Handler(:,2));
+                plot(Handler(:,1),Handler(:,2),'color',blueGRADIENTflexible(TheOneCycle,nCycle));
                 xlim([0,ceil(max(Handler(:,1)) * 10) / 10]);
                 if PeakVoltage == 0
                     PeakVoltage = ceil(max(Handler(:,2)));
                 end
                 ylim([0,PeakVoltage]);
                 xlabel("Capacity (mAh)");ylabel("Voltage (V)");
+                exportgraphics(sc,Path+"/SingleCycleData/Cycle"+string(TheOneCycle)+".png",'Resolution',300)
+
+                figure(tc);
+                hold on
+                plot(Handler(:,1),Handler(:,2),'color',blueGRADIENTflexible(TheOneCycle,nCycle));
+                xlabel("Capacity (mAh)");ylabel("Voltage (V)");
+                TheOneCycle = TheOneCycle + 1;
             end
             if (Index == height(Rawdata))
                 break
@@ -108,14 +118,14 @@ for i = (1:floor(height(QFinal)/2))
     CDC = [CDC; QFinal(i*2)/QFinal(i*2-1)]; %Charge/previous discharge
 end
 figure(qn)
-scatter(CDC,"filled");
+scatter(linspace(1,i,i),CDC,"filled");
 xlabel("Number of Cycle");ylabel("QC/QDC");
 
-% exportgraphics(vt,'TimeVoltage.png','Resolution',300)
-% exportgraphics(vi,'VoltageCurrent.png','Resolution',300)
-exportgraphics(qv,'VoltageCapacity.png','Resolution',300)
-exportgraphics(qn,'IterationCharge.png','Resolution',300)
+% exportgraphics(vt,Path+'/TimeVoltage.png','Resolution',300)
+% exportgraphics(vi,Path+'/VoltageCurrent.png','Resolution',300)
+exportgraphics(qv,Path+'/VoltageCapacity.png','Resolution',300)
+exportgraphics(qn,Path+'/IterationCharge.png','Resolution',300)
 if (TheOneCycle > 0)
-    exportgraphics(sc,'SingleCycle'+string(TheOneCycle)+'.png','Resolution',300)
+    exportgraphics(tc,Path+'/CombinedCycle.png','Resolution',300)
 end
 % close all
