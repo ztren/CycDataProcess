@@ -4,7 +4,7 @@ if string(Filename(max(strlength(Filename)-3,1):strlength(Filename))) ~= ".txt"
 end
 
 % PeakVoltage = 2.7 %Test voltage
-PeakVoltage = input('Please input the peak (charged) voltage (±0.005V):'); % Input a huge number to disable clipping
+PeakVoltage = input('Please input the peak (charged) voltage (±0.005V):'); % Trimming is now disabled. PeakVoltage is now used for setting the axis of single cycle diagram.
 TheOneCycle = input('Please input the index of cycle for analysis (0 for disabling):');
 
 % Filename = 'RH001_Li4Ti5O12_initialtest_1C-2C-10C_2pt7V_CF7.txt' %Test File
@@ -45,16 +45,16 @@ for Cyclenum = (0: nCycle)
         if (State ~= LastState) || (Index == height(Rawdata));
             if Index ~= 1
                 % Dataarray
-                figure(vt);
-                hold on
-                subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
-                plot(Dataarray(:,1),Dataarray(:,2),'color',blueGRADIENTflexible(Cyclenum,nCycle));
-                xlabel("time (s)");ylabel("Voltage (V)");
-                figure(vi);
-                hold on
-                subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
-                plot(Dataarray(:,2),Dataarray(:,3),'color',blueGRADIENTflexible(Cyclenum,nCycle));
-                xlabel("Voltage (V)");ylabel("Current (mA)");
+                % figure(vt);
+                % hold on
+                % subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
+                % plot(Dataarray(:,1),Dataarray(:,2),'color',blueGRADIENTflexible(Cyclenum,nCycle));
+                % xlabel("time (s)");ylabel("Voltage (V)");
+                % figure(vi);
+                % hold on
+                % subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
+                % plot(Dataarray(:,2),Dataarray(:,3),'color',blueGRADIENTflexible(Cyclenum,nCycle));
+                % xlabel("Voltage (V)");ylabel("Current (mA)");
                 figure(qv);
                 hold on
                 subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
@@ -75,6 +75,8 @@ for Cyclenum = (0: nCycle)
                 % plot(DischargeHandler(:,1),DischargeHandler(:,2), 'color', 'blue');
                 % plot(ChargeHandler(:,1),ChargeHandler(:,2), 'color', 'red');
                 plot(Handler(:,1),Handler(:,2));
+                xlim([0,ceil(max(Handler(:,1)) * 10) / 10]);
+                ylim([0,max(PeakVoltage,max(Handler(:,2)))]);
                 xlabel("Capacity (mAh)");ylabel("Voltage (V)");
             end
             if (Index == height(Rawdata))
@@ -84,7 +86,7 @@ for Cyclenum = (0: nCycle)
             t0 = Rawdata{Index,"time/s"}; %Time when charge/discharge starts
         end
         h = height(Dataarray);
-        if (State ~= 1) || (h < 2) || ((abs(Dataarray(h,2)/Dataarray(h-1,2))-1) > 6E-5) || (abs(Dataarray(h,2) - PeakVoltage) > 0.005) % Trimming
+        if (State ~= 1) || (h < 2) || ((abs(Dataarray(h,2)/Dataarray(h-1,2))-1) > 6E-5) %|| (abs(Dataarray(h,2) - PeakVoltage) > 0.005) % Trimming, Now disabled because we're not currently using them
             Time = Rawdata{Index,"time/s"} - t0;
             Voltage = Rawdata{Index,"Ecell/V"};
             Current = Rawdata{Index, "<I>/mA"};
@@ -103,11 +105,11 @@ for i = (1:floor(height(QFinal)/2))
     CDC = [CDC; QFinal(i*2)/QFinal(i*2-1)]; %Charge/previous discharge
 end
 figure(qn)
-plot(CDC);
+scatter(CDC,"filled");
 xlabel("Number of Cycle");ylabel("QC/QDC");
 
-exportgraphics(vt,'TimeVoltage.png','Resolution',300)
-exportgraphics(vi,'VoltageCurrent.png','Resolution',300)
+% exportgraphics(vt,'TimeVoltage.png','Resolution',300)
+% exportgraphics(vi,'VoltageCurrent.png','Resolution',300)
 exportgraphics(qv,'VoltageCapacity.png','Resolution',300)
 exportgraphics(qn,'IterationCharge.png','Resolution',300)
 if (TheOneCycle > 0)
