@@ -4,7 +4,7 @@ if string(Filename(max(strlength(Filename)-3,1):strlength(Filename))) ~= ".txt"
 end
 
 % PeakVoltage = 2.7 %Test voltage
-PeakVoltage = input('Please input the peak (charged) voltage (±0.005V):'); % Trimming is now disabled. PeakVoltage is now used for setting the axis of single cycle diagram.
+PeakVoltage = input('Please input the peak (charged) voltage (±0.005V):'); % Trimming is now disabled. PeakVoltage is now used for setting the axis of single cycle diagram. If 
 TheOneCycle = input('Please input the index of cycle for analysis (0 for disabling):');
 
 % Filename = 'RH001_Li4Ti5O12_initialtest_1C-2C-10C_2pt7V_CF7.txt' %Test File
@@ -76,7 +76,10 @@ for Cyclenum = (0: nCycle)
                 % plot(ChargeHandler(:,1),ChargeHandler(:,2), 'color', 'red');
                 plot(Handler(:,1),Handler(:,2));
                 xlim([0,ceil(max(Handler(:,1)) * 10) / 10]);
-                ylim([0,max(PeakVoltage,max(Handler(:,2)))]);
+                if PeakVoltage == 0
+                    PeakVoltage = ceil(max(Handler(:,2)));
+                end
+                ylim([0,PeakVoltage]);
                 xlabel("Capacity (mAh)");ylabel("Voltage (V)");
             end
             if (Index == height(Rawdata))
@@ -115,4 +118,4 @@ exportgraphics(qn,'IterationCharge.png','Resolution',300)
 if (TheOneCycle > 0)
     exportgraphics(sc,'SingleCycle'+string(TheOneCycle)+'.png','Resolution',300)
 end
-close all
+% close all
