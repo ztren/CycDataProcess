@@ -4,10 +4,10 @@ Firstrun: Install MATLAB. Change Directory to the folder. Execute the following 
 
 `chmod 755 run.sh`
 
-Then you could execute `./run.sh` in the folder. Make sure you include the script, `dataproc.m`, and your data in the same folder (data can be elsewhere but you have to input the absolute directory for the prompt)
+Then you could execute `./run.sh` in the folder. Make sure you include the script, `dataproc.m`, and your data under `Data/` in the same folder 
 
 ## Usage
-The program will ask for three prompts, the file name, the peak voltage, and the cycle needed to be analyzed. 
+The program will ask for four prompts, the file name, the peak voltage, the cycle number, and specific mass (Is that the correct name?). 
 
 ### Filename
 File name can be with or without `.txt` (but the actual file should be a txt file)
@@ -17,6 +17,9 @@ This is the fully charged voltage, ~~used for trimming when the voltage doesn't 
 
 ### Cycle number
 Input a number no more than the maximum cycle index to analyze the `Q/V` relationship from that cycle to the end of experiment.
+
+### Mass
+Used for certain calculations. Enter 0 to disable related figures to generate.
 
 ## Note
 if one want to do research on the figure rather than get an impression of everything it might be better to use the actual MATLAB app where one can scale in and drag the plots. To do this simply open the `dataproc.m` on MATLAB, and comment out the last line, i.e. making it
