@@ -13,11 +13,8 @@ if (QuickSetup ~= "0")
     dqdvIndicator = input('Please enter the difference of index for dq/dv (0 for default(2), -1 for disable):');
 else
     PeakVoltage = 0;
-    TheOneCycle = 1; %Should be 1; 0 for testing
+    TheOneCycle = 1; %Should be 1; 0 for testing.
     Mass = 0;
-    dqdvIndicator = 2;
-end
-if (dqdvIndicator == 0)
     dqdvIndicator = 2;
 end
 
@@ -64,6 +61,8 @@ if (dqdvIndicator >= 0)
         dqdvIndicator = 2;
     end
     dqdv = figure; % Qm^-1/V
+    dqdvS = figure;
+    mkdir(Path+"/SingledqdvData");
 end
 QFinal = [];
 
@@ -121,6 +120,7 @@ for Cyclenum = (0: nCycle)
                     ylim([0,PeakVoltage]);
                     xlabel("Capacity (mAh)");ylabel("Voltage (V)");
                     exportgraphics(sc,Path+"/SingleCycleData/Cycle"+string(TheOneCycle)+".png",'Resolution',300)
+                    clf(sc);
                     figure(tc);
                     hold on
                     plot(Handler(:,1),Handler(:,2),'color',blueGRADIENTflexible(TheOneCycle,nCycle));
@@ -142,10 +142,21 @@ for Cyclenum = (0: nCycle)
                     plot(dqdvArray(:,1),dqdvArray(:,2),'color',blueGRADIENTflexible(Cyclenum,nCycle));
                     xlabel("Voltage (V)");ylabel("dQ/dV");
                     ylim([-0.01,0.01]);
-                catch ME
-                    if 1
-                        warning("Difference of index for dq/dv is too large or manually disabled dq/dv. Disabling dq/dv generation");
+                    figure(dqdvS);
+                    hold on;
+                    subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
+                    plot(dqdvArray(:,1),dqdvArray(:,2),'color',blueGRADIENTflexible(Cyclenum,nCycle));
+                    xlabel("Voltage (V)");ylabel("dQ/dV");
+                    ylim([-0.01,0.01]);
+                    if (LastState == 0)
+                        hold off
+                        exportgraphics(dqdvS,Path+"/SingledqdvData/Cycle"+string(Cyclenum)+".png",'Resolution',300)
+                        clf(dqdvS);
                     end
+                catch ME
+                    % if 1
+                    %     warning("Difference of index for dq/dv is too large or manually disabled dq/dv. Disabling dq/dv generation");
+                    % end
                 end
             end
             if (Index == height(Rawdata))
