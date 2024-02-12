@@ -30,8 +30,12 @@ if one want to do research on the figure rather than get an impression of everyt
 
 ## Future plans
 add limitations (like plotting for certain cycles)? √(in some ways - plotting everything)
+
 user enter AM mass in mg √
+
 change CE to scatter plot √
+
 fixed scale for single cycle graphs √
+
 dQ/dV
 <!-- Lithiation -->

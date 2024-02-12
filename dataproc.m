@@ -1,14 +1,26 @@
+fprintf("Welcome. Please make sure the experiment data is stored in Data/ folder. Create the folder if it doesn't exist.\n")
 Filename = input('Please input the file name:',"s");
 if string(Filename(max(strlength(Filename)-3,1):strlength(Filename))) ~= ".txt"
     Filename = Filename + ".txt";
 end
 
-% PeakVoltage = 2.7 %Test voltage
-PeakVoltage = input('Please input the peak (charged) voltage for graphing (0 for auto adjustment):'); % Trimming is now disabled. PeakVoltage is now used for setting the axis of single cycle diagram. If 
-TheOneCycle = input('Please input the first index (to the final) of cycle for analysis\n (0 for disabling, 1 for all cycles):');
-Mass = input('Please enter the specific mass (mg, <=0 for disabling):');
+QuickSetup = input('Enter 0 for quick setup (auto adjusts everything):',"s");
+if (QuickSetup ~= "0")
+    % PeakVoltage = 2.7 %Test voltage
+    PeakVoltage = input('Please input the peak (charged) voltage for graphing (0 for auto adjustment):'); % Trimming is now disabled. PeakVoltage is now used for setting the axis of single cycle diagram. If 
+    TheOneCycle = input('Please input the first index (to the final) of cycle for analysis\n (0 for disabling, 1 for all cycles):');
+    Mass = input('Please enter the specific mass (mg, <=0 for disabling):');
+    dqdvIndicator = input('Please enter the difference of index for dq/dv (0 for default(2), -1 for disable):');
+else
+    PeakVoltage = 0;
+    TheOneCycle = 1; %Should be 1; 0 for testing
+    Mass = 0;
+    dqdvIndicator = 2;
+end
+if (dqdvIndicator == 0)
+    dqdvIndicator = 2;
+end
 
-% Filename = 'RH001_Li4Ti5O12_initialtest_1C-2C-10C_2pt7V_CF7.txt' %Test File
 try
     Rawdata = readtable("Data/"+Filename);
 catch
@@ -47,15 +59,22 @@ if (TheOneCycle > 0)
     tc = figure; % Conbined Cycles
     mkdir(Path+"/SingleCycleData");
 end
+if (dqdvIndicator >= 0)
+    if (dqdvIndicator == 0)
+        dqdvIndicator = 2;
+    end
+    dqdv = figure; % Qm^-1/V
+end
 QFinal = [];
 
 Index = 1;
 LastState = -1; % 1 for charge, 0 for discharge
 for Cyclenum = (0: nCycle)
     while Rawdata{Index, "cycle number"} == Cyclenum
-        State = Rawdata{Index, "ox/red"};
+        State = Rawdata{Index, "ox/red"}; % get Charge/Discharge state, if not equal to the last state generate plot and clear Dataarray
         if (State ~= LastState) || (Index == height(Rawdata));
             if Index ~= 1
+                %%
                 % Dataarray
                 % figure(vt);
                 % hold on
@@ -67,45 +86,67 @@ for Cyclenum = (0: nCycle)
                 % subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
                 % plot(Dataarray(:,2),Dataarray(:,3),'color',blueGRADIENTflexible(Cyclenum,nCycle));
                 % xlabel("Voltage (V)");ylabel("Current (mA)");
-                figure(qv);
+                %% 
+                figure(qv); %mAh/V
                 hold on
                 subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
                 plot(Dataarray(:,4),Dataarray(:,2),'color',blueGRADIENTflexible(Cyclenum,nCycle));
                 xlabel("Capacity (mAh)");ylabel("Voltage (V)");
                 if (Mass > 0)
-                    figure(qm);
+                    figure(qm); %mAh*mg-1/V
                     hold on
                     subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
                     plot(Dataarray(:,4) / Mass,Dataarray(:,2),'color',blueGRADIENTflexible(Cyclenum,nCycle));
                     xlabel("mAh/mg");ylabel("Voltage (V)");
                 end
-            end
-            if (Cyclenum ~= 0) || (LastState == 0)
-                QFinal = [QFinal; Dataarray(height(Dataarray),4)];
-            end
-            if (TheOneCycle == (Cyclenum + 1)) && (TheOneCycle > 0) && (LastState == 0)
-                DischargeHandler = [Dataarray(:,4),Dataarray(:,2)];
-            elseif (TheOneCycle == (Cyclenum)) && (TheOneCycle > 0) && (LastState == 1)
-                ChargeHandler = [Dataarray(:,4),Dataarray(:,2)];
-                ChargeHandler(:,1) = DischargeHandler(height(DischargeHandler),1) - ChargeHandler(:,1);
-                Handler = [DischargeHandler; ChargeHandler];
-                figure(sc);
-                % plot(DischargeHandler(:,1),DischargeHandler(:,2), 'color', 'blue');
-                % plot(ChargeHandler(:,1),ChargeHandler(:,2), 'color', 'red');
-                plot(Handler(:,1),Handler(:,2),'color',blueGRADIENTflexible(TheOneCycle,nCycle));
-                xlim([0,ceil(max(Handler(:,1)) * 10) / 10]);
-                if PeakVoltage == 0
-                    PeakVoltage = ceil(max(Handler(:,2)));
-                end
-                ylim([0,PeakVoltage]);
-                xlabel("Capacity (mAh)");ylabel("Voltage (V)");
-                exportgraphics(sc,Path+"/SingleCycleData/Cycle"+string(TheOneCycle)+".png",'Resolution',300)
 
-                figure(tc);
-                hold on
-                plot(Handler(:,1),Handler(:,2),'color',blueGRADIENTflexible(TheOneCycle,nCycle));
-                xlabel("Capacity (mAh)");ylabel("Voltage (V)");
-                TheOneCycle = TheOneCycle + 1;
+                if (Cyclenum ~= 0) || (LastState == 0) %Record final Q for C/DC diagram
+                    QFinal = [QFinal; Dataarray(height(Dataarray),4)];
+                end
+    
+                if (TheOneCycle == (Cyclenum + 1)) && (TheOneCycle > 0) && (LastState == 0) %record single cycle data
+                    DischargeHandler = [Dataarray(:,4),Dataarray(:,2)];
+                elseif (TheOneCycle == (Cyclenum)) && (TheOneCycle > 0) && (LastState == 1)
+                    ChargeHandler = [Dataarray(:,4),Dataarray(:,2)];
+                    ChargeHandler(:,1) = DischargeHandler(height(DischargeHandler),1) - ChargeHandler(:,1);
+                    Handler = [DischargeHandler; ChargeHandler];
+                    figure(sc);
+                    % plot(DischargeHandler(:,1),DischargeHandler(:,2), 'color', 'blue');
+                    % plot(ChargeHandler(:,1),ChargeHandler(:,2), 'color', 'red');
+                    plot(Handler(:,1),Handler(:,2),'color',blueGRADIENTflexible(TheOneCycle,nCycle));
+                    xlim([0,ceil(max(Handler(:,1)) * 10) / 10]);
+                    if PeakVoltage == 0
+                        PeakVoltage = ceil(max(Handler(:,2)));
+                    end
+                    ylim([0,PeakVoltage]);
+                    xlabel("Capacity (mAh)");ylabel("Voltage (V)");
+                    exportgraphics(sc,Path+"/SingleCycleData/Cycle"+string(TheOneCycle)+".png",'Resolution',300)
+                    figure(tc);
+                    hold on
+                    plot(Handler(:,1),Handler(:,2),'color',blueGRADIENTflexible(TheOneCycle,nCycle));
+                    xlabel("Capacity (mAh)");ylabel("Voltage (V)");
+                    TheOneCycle = TheOneCycle + 1;
+                end
+                
+                try
+                    if (isempty(1+dqdvIndicator: height(Dataarray)-dqdvIndicator)) || (dqdvIndicator <= 0)
+                        throw(ME);
+                    end
+                    DQ = Dataarray(1+dqdvIndicator : height(Dataarray),4) - Dataarray(1 : height(Dataarray)-dqdvIndicator,4);
+                    DV = Dataarray(1+dqdvIndicator : height(Dataarray),2) - Dataarray(1 : height(Dataarray)-dqdvIndicator,2); %V
+                    DV = DV * 1000; %mV
+                    dqdvArray = [Dataarray(1+dqdvIndicator : height(Dataarray),2),DQ./DV];
+                    figure(dqdv);
+                    hold on
+                    subplot(2,1,(2-LastState)) % subplot 1 for charge, 2 for discharge
+                    plot(dqdvArray(:,1),dqdvArray(:,2),'color',blueGRADIENTflexible(Cyclenum,nCycle));
+                    xlabel("Voltage (V)");ylabel("dQ/dV");
+                    ylim([-0.01,0.01]);
+                catch ME
+                    if 1
+                        warning("Difference of index for dq/dv is too large or manually disabled dq/dv. Disabling dq/dv generation");
+                    end
+                end
             end
             if (Index == height(Rawdata))
                 break
@@ -146,4 +187,7 @@ end
 if (TheOneCycle > 0)
     exportgraphics(tc,Path+'/CombinedCycle.png','Resolution',300)
 end
-% close all
+if (dqdvIndicator > 0)
+    exportgraphics(dqdv,Path+'/dQdV.png','Resolution',300)
+end
+close all
