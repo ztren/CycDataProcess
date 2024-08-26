@@ -2,8 +2,6 @@ __pycache__
 *.png
 .DS_store
 *.txt
-*.ipynb
-*.py
 *.xlsx
 *.mplstyle
 RecyclerDataProcess.prj
