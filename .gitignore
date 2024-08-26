@@ -1,7 +1,8 @@
 __pycache__
 *.png
 .DS_store
-*.txt
+# *.txt
+sky*.txt
 *.xlsx
 *.mplstyle
 RecyclerDataProcess.prj
