@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import time
 # import math
 
 def ztest(points, thresh=3):
@@ -56,7 +57,7 @@ nCycle = Rawdata['half.cycle'].max()
 #     dqdvIndicator = 2
 TheOneCycle = 0 # for compatability
 
-Path = "GarbageChecker/"+Filename[8:-4]
+
 # os.mkdir(Path)
 
 # try:
@@ -100,8 +101,15 @@ Ylim = VoltageData[~ztest(VoltageData,3.5)]
 # plt.ylim(np.min(Ylim)-0.05,np.max(Ylim)+0.05)
 
 plt.subplot(122)
+for I in Rawdata['X.I..mA']:
+    if I > 0: 
+        I = 1
+        break
+    elif I < 0: 
+        I = -1
+        break
 for Index in range(min(len(QFinal),len(QDCFinal))):
-    Efficiency.append(-QFinal[Index] / QDCFinal[Index])
+    Efficiency.append(-QFinal[Index]**(-I) * QDCFinal[Index]**(I))
 plt.scatter(range(1,len(Efficiency)+1), Efficiency , c=range(len(Efficiency)),cmap="cool")
 try:
     plt.ylim(min(Efficiency)-0.05, max(Efficiency)+0.05) if ~ztest(np.array(Efficiency),4)[-1] else plt.ylim(min(Efficiency)-0.05, max(Efficiency[:-1])+0.05)
@@ -110,4 +118,6 @@ except:
 plt.xlabel("# of Cycle")
 plt.ylabel("Efficiency")
 # plt.show()
+
+Path = "GarbageChecker/"+time.strftime("%Y-%m-%d", time.localtime())+Filename[8:-4]
 plt.savefig(Path+".png")

@@ -1,6 +1,7 @@
 __pycache__
 *.png
 .DS_store
+Data/*
 # *.txt
 sky*.txt
 *.xlsx
