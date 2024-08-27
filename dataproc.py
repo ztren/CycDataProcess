@@ -32,6 +32,9 @@ else:
         Rawdata = pd.read_csv("Data/"+Filename)
     except FileNotFoundError:
         print(Filename+" not found. The CSV Converter might be failed.")
+        log = open('Checker.log', 'a')
+        log.write(Filename+" is new/updated but mprReader couldn't read it. Please Check Manually\n")
+        log.close()
     except:
         print(Filename+" read failed. Did you put it in Data/Filename?")
 nCycle = Rawdata['half.cycle'].max()
@@ -53,7 +56,7 @@ nCycle = Rawdata['half.cycle'].max()
 #     dqdvIndicator = 2
 TheOneCycle = 0 # for compatability
 
-Path = "GarbageChecker/"+Filename[:-4]
+Path = "GarbageChecker/"+Filename[8:-4]
 # os.mkdir(Path)
 
 # try:
@@ -67,38 +70,43 @@ Path = "GarbageChecker/"+Filename[:-4]
 #     print('Unknown error. Disabling single cycle analysis')
 #     TheOneCycle = 0
 
-colors = [ cm.cool(x) for x in np.linspace(0, 1, nCycle) ]
+colors = [ cm.cool(x) for x in np.linspace(0, 1, max(nCycle,1)) ]
 
 QFinal = []
 QDCFinal = []
 Efficiency = []
 
 plt.figure(figsize=(15,5))
-plt.suptitle(Filename[:-4],fontsize=20)
+plt.suptitle(Filename[9:-4],fontsize=18)
 
 plt.subplot(121)
 for Index in range(TheOneCycle, nCycle+1):
     Rawdata[Rawdata['half.cycle'] == Index]
-    Xaxis = Rawdata[Rawdata['half.cycle'] == Index]['Q.charge.discharge.mA.h']
+    Xaxis = abs(Rawdata[Rawdata['half.cycle'] == Index]['Q.charge.discharge.mA.h'])
     if (Index % 2 == 0): 
         QFinal.append(Rawdata[Rawdata['half.cycle'] == Index]['Q.charge.discharge.mA.h'].iloc[-1])
+        # Xaxis = -Xaxis
     if (Index % 2 == 1): 
         QDCFinal.append(Rawdata[Rawdata['half.cycle'] == Index]['Q.charge.discharge.mA.h'].iloc[-1])
-        Xaxis = QFinal[Index // 2 - 1]+Xaxis
+        # Xaxis = QFinal[Index // 2 - 1]+Xaxis
     Yaxis = Rawdata[Rawdata['half.cycle'] == Index]['Ewe.V']
     plt.plot(Xaxis, Yaxis, color=colors[Index-1])
     plt.xlabel("Capacity (mAh)")
     plt.ylabel("Voltage(V)")
 VoltageData = Rawdata['Ewe.V'].to_numpy()
-Xlim = np.array(QFinal)[~ztest(np.array(QFinal))]
-Ylim = VoltageData[~ztest(VoltageData)]
-plt.xlim(-0.05,np.max(Xlim)+0.05)
-plt.ylim(np.min(Ylim)-0.05,np.max(Ylim)+0.05)
+Xlim = -np.array(QFinal)[~ztest(np.array(QFinal))]
+Ylim = VoltageData[~ztest(VoltageData,3.5)]
+# plt.xlim(-0.01,np.max(Xlim)+0.05)
+# plt.ylim(np.min(Ylim)-0.05,np.max(Ylim)+0.05)
 
 plt.subplot(122)
 for Index in range(min(len(QFinal),len(QDCFinal))):
-    Efficiency.append(-QDCFinal[Index] / QFinal[Index])
+    Efficiency.append(-QFinal[Index] / QDCFinal[Index])
 plt.scatter(range(1,len(Efficiency)+1), Efficiency , c=range(len(Efficiency)),cmap="cool")
+try:
+    plt.ylim(min(Efficiency)-0.05, max(Efficiency)+0.05) if ~ztest(np.array(Efficiency),4)[-1] else plt.ylim(min(Efficiency)-0.05, max(Efficiency[:-1])+0.05)
+except:
+    pass
 plt.xlabel("# of Cycle")
 plt.ylabel("Efficiency")
 # plt.show()
