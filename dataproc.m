@@ -23,7 +23,7 @@ try
 catch
     error("File not found. Did you put it in Data/Filename?")
 end
-Rawdata.Properties.VariableNames = ["cycle number" , "ox/red" , "control changes" , "Ns changes" , "time/s" , "step time/s" , "Ecell/V" , "<I>/mA" , "Capacity/mA.h" , "Q discharge/mA.h" , "Q charge/mA.h" , "dq/mA.h"];
+Rawdata.Properties.VariableNames = ["cycle number" , "ox/red" , "control changes" , "Ns changes" , "time/s" , "step time/s" , "Ecell/V" , "<I>/mA" , "Capacity/mA.h" , "Q discharge/mA.h" , "Q charge/mA.h" , "dq/mA.h", "eff"];
 
 Path = "Figures/"+erase(Filename,".txt");
 mkdir(Path);
@@ -99,7 +99,7 @@ for Cyclenum = (0: nCycle)
                     xlabel("mAh/mg");ylabel("Voltage (V)");
                 end
 
-                if (Cyclenum ~= 0) || (LastState == 0) %Record final Q for C/DC diagram
+                if (Cyclenum == 0) || (LastState == 1) %Record final Q for C/DC diagram
                     QFinal = [QFinal; Dataarray(height(Dataarray),4)];
                 end
     
